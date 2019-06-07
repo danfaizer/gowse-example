@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	port = flag.String("port", "9000", "port used for ws connection")
+	port = flag.String("port", "9001", "port used for ws connection")
 )
 
 func main() {
