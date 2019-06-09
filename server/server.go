@@ -20,7 +20,6 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		gowse.TopicHandler(t, w, r)
 	})
-
 	go func() {
 		c := Check{ID: "aaaa", ChecktypeName: "bbb"}
 		time.Sleep(10 * time.Second)
