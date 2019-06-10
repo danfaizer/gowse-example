@@ -26,34 +26,20 @@ func main() {
 
 	// receive
 	var m map[string]interface{}
+	done := make(chan error)
 	go func() {
+		var err error
 		for {
-			err := websocket.JSON.Receive(ws, &m)
+			err = websocket.JSON.Receive(ws, &m)
 			if err != nil {
 				fmt.Println("Error receiving message: ", err.Error())
 				break
 			}
 			fmt.Println("Message: ", m)
 		}
+		done <- err
 	}()
-	for {
-	}
-	// // send
-	// scanner := bufio.NewScanner(os.Stdin)
-	// for scanner.Scan() {
-	// 	text := scanner.Text()
-	// 	if text == "" {
-	// 		continue
-	// 	}
-	// 	m := Message{
-	// 		Text: text,
-	// 	}
-	// 	err = websocket.JSON.Send(ws, m)
-	// 	if err != nil {
-	// 		fmt.Println("Error sending message: ", err.Error())
-	// 		break
-	// 	}
-	// }
+	<-done
 }
 
 // connect connects to the local chat server at port <port>
