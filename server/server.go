@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -47,12 +48,18 @@ func main() {
 		done <- err
 	}()
 	sg := make(chan os.Signal)
-	signal.Notify(sg, syscall.SIGINT)
+	signal.Notify(sg, syscall.SIGTERM)
 	go func() {
 		<-sg
+		fmt.Printf("interrupt signal received\n")
 		wss.Shutdown(context.Background())
 	}()
-	<-done
+	err := <-done
+	if err != nil {
+		fmt.Printf("http server stopped, error returned:%+v", err)
+	}
+	fmt.Printf("stopping gowse\n")
 	stopGowse()
+	fmt.Printf("waiting gowse to finalize")
 	s.WaitFinished()
 }
