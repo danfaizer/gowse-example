@@ -47,16 +47,15 @@ func main() {
 		done <- err
 	}()
 	sg := make(chan os.Signal)
-	signal.Notify(sg, syscall.SIGTERM, syscall.SIGABRT)
+	signal.Notify(sg, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		<-sg
-		fmt.Printf("interrupt signal received\n")
 		wss.Shutdown(context.Background())
 	}()
 	err := <-done
-	if err != nil {
-		fmt.Printf("http server stopped, error returned:%+v", err)
+	if err != nil && err != http.ErrServerClosed {
+		fmt.Printf("error stoping http server: %+v", err)
 	}
-	fmt.Printf("stopping gowse\n")
+	fmt.Printf("waiting gowse to stop")
 	s.Stop()
 }
