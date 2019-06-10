@@ -20,8 +20,7 @@ type Check struct {
 
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags)
-	ctx, stopGowse := context.WithCancel(context.Background())
-	s := gowse.NewServer(ctx, l)
+	s := gowse.NewServer(l)
 	t := s.CreateTopic("test")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +47,7 @@ func main() {
 		done <- err
 	}()
 	sg := make(chan os.Signal)
-	signal.Notify(sg, syscall.SIGTERM)
+	signal.Notify(sg, syscall.SIGTERM, syscall.SIGABRT)
 	go func() {
 		<-sg
 		fmt.Printf("interrupt signal received\n")
@@ -59,7 +58,5 @@ func main() {
 		fmt.Printf("http server stopped, error returned:%+v", err)
 	}
 	fmt.Printf("stopping gowse\n")
-	stopGowse()
-	fmt.Printf("waiting gowse to finalize")
-	s.WaitFinished()
+	s.Stop()
 }
