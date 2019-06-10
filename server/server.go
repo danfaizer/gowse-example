@@ -1,8 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/danfaizer/gowse"
@@ -14,11 +18,15 @@ type Check struct {
 }
 
 func main() {
-	s := gowse.New()
+	l := log.New(os.Stdout, "", log.LstdFlags)
+	ctx, stopGowse := context.WithCancel(context.Background())
+	s := gowse.NewServer(ctx, l)
 	t := s.CreateTopic("test")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		gowse.TopicHandler(t, w, r)
+		if err := t.TopicHandler(w, r); err != nil {
+			l.Printf("error handling subcriber request: %+v", err)
+		}
 	})
 	go func() {
 		c := Check{ID: "aaaa", ChecktypeName: "bbb"}
@@ -33,6 +41,18 @@ func main() {
 	}()
 
 	wss := http.Server{Addr: ":" + "9001", Handler: mux}
-	err := wss.ListenAndServe()
-	fmt.Println(err)
+	done := make(chan error)
+	go func() {
+		err := wss.ListenAndServe()
+		done <- err
+	}()
+	sg := make(chan os.Signal)
+	signal.Notify(sg, syscall.SIGINT)
+	go func() {
+		<-sg
+		wss.Shutdown(context.Background())
+	}()
+	<-done
+	stopGowse()
+	s.WaitFinished()
 }
