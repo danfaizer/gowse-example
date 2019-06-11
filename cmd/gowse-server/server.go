@@ -18,14 +18,28 @@ type Check struct {
 	ChecktypeName string
 }
 
+type logger struct {
+	*log.Logger
+}
+
+func (l *logger) Infof(format string, v ...interface{}) {
+	s := fmt.Sprintf(format, v...)
+	l.Printf("info:%s", s)
+}
+
+func (l *logger) Error(format string, v ...interface{}) {
+	s := fmt.Sprintf(format, v...)
+	l.Printf("error:%s", s)
+}
+
 func main() {
-	l := log.New(os.Stdout, "", log.LstdFlags)
+	l := &logger{Logger: log.New(os.Stdout, "", log.LstdFlags)}
 	s := gowse.NewServer(l)
 	t := s.CreateTopic("test")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if err := t.TopicHandler(w, r); err != nil {
-			l.Printf("error handling subcriber request: %+v", err)
+		if err := t.SubscriberHandler(w, r); err != nil {
+			l.Printf("error handling subscriber request: %+v", err)
 		}
 	})
 	go func() {
