@@ -68,8 +68,8 @@ func main() {
 	}()
 	err := <-done
 	if err != nil && err != http.ErrServerClosed {
-		fmt.Printf("error stoping http server: %+v", err)
+		fmt.Printf("\nerror stoping http server: %+v", err)
 	}
-	fmt.Printf("waiting gowse to stop")
+	fmt.Printf("\nwaiting gowse to stop\n")
 	s.Stop()
 }
