@@ -27,7 +27,7 @@ func (l *logger) Infof(format string, v ...interface{}) {
 	l.Printf("info:%s", s)
 }
 
-func (l *logger) Error(format string, v ...interface{}) {
+func (l *logger) Errorf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	l.Printf("error:%s", s)
 }
